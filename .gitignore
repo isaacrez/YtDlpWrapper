@@ -1,0 +1,5 @@
+# Ignroe local downloads
+\downloads
+
+# Ignore yt-dlp executable
+*.exe
