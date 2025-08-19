@@ -3,3 +3,5 @@
 
 # Ignore yt-dlp executable
 *.exe
+
+_pycache_

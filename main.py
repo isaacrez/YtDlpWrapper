@@ -16,7 +16,7 @@ class App(Tk):
 
     def __init__(self):
         super().__init__()
-        self.geometry("600x600")
+        self.geometry("600x300")
 
         wrapper = ttk.Frame(self)
         wrapper.pack(fill=BOTH, expand=True)
@@ -24,6 +24,7 @@ class App(Tk):
         title = ttk.Label(wrapper, text='YouTube DLP Wrapper')
 
         url_input = FormInput(wrapper, "URL")
+        target_folder_input = FormInput(wrapper, "Target Folder")
 
         options_frame = ttk.Frame(wrapper)
 
@@ -34,13 +35,14 @@ class App(Tk):
         ]
         import_option = RadiobuttonSet(options_frame, options)
 
-        confirm_button = ConfirmButton(wrapper, url_entry=url_input, import_option=import_option)
+        confirm_button = ConfirmButton(wrapper, url_entry=url_input, import_option=import_option, target_folder_input=target_folder_input)
 
         title.pack()
         options_frame.pack()
         import_option.pack()
 
         url_input.pack(fill=X)
+        target_folder_input.pack(fill=X)
         confirm_button.pack()
 
         self.style = ttk.Style(self)
@@ -97,10 +99,11 @@ class FormInput(ttk.Frame):
 
 class ConfirmButton(ttk.Button):
     
-    def __init__(self, parent: Widget, import_option: Widget, url_entry: Widget):
+    def __init__(self, parent: Widget, import_option: Widget, url_entry: Widget, target_folder_input: Widget):
         ttk.Button.__init__(self, parent, text="Import", command=self.threaded_click)
         self.import_option = import_option
         self.url_entry = url_entry
+        self.target_folder_input = target_folder_input
 
     def threaded_click(self):
         t1 = threading.Thread(target=self.on_click)
@@ -109,6 +112,7 @@ class ConfirmButton(ttk.Button):
     def on_click(self):
         request_type = self.import_option.get_value()
         url = self.url_entry.get_value()
+        directory = self.target_folder_input.get_value().replace("\\", "/")
 
         if request_type == "":
             print("ERROR - Select a RequestType")
@@ -121,7 +125,12 @@ class ConfirmButton(ttk.Button):
         if url == "":
             print("ERROR: Provide a URL")
 
-        t1 = threading.Thread(target=YtDlpWrapper.call, args=(request_type, url))
+        # TODO - Find a lazy dumb way to do this
+        if directory != "":
+            t1 = threading.Thread(target=YtDlpWrapper.call, args=(request_type, url, directory))
+        if directory == "":
+            t1 = threading.Thread(target=YtDlpWrapper.call, args=(request_type, url))
+
         t1.start()
         t1.join()
 
